@@ -1364,6 +1364,9 @@ static int fuse_access(struct inode *inode, int mask)
 	struct fuse_access_in inarg;
 	int err;
 
+	if (fuse_bpf_access(&err, inode, mask))
+		return err;
+
 	BUG_ON(mask & MAY_NOT_BLOCK);
 
 	if (fm->fc->no_access)
@@ -1419,6 +1422,9 @@ static int fuse_permission(struct user_namespace *mnt_userns,
 
 	if (!fuse_allow_current_process(fc))
 		return -EACCES;
+
+	if (fuse_bpf_access(&err, inode, mask))
+		return err;
 
 	/*
 	 * If attributes are needed, refresh them before proceeding
